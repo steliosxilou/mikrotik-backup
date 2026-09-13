@@ -2,10 +2,10 @@ import os
 import time
 import paramiko
 
-router_ip = "your router IP"
-username = "username of the user on the router"
+router_ip = "YOUR_ROUTER_IP"
+username = "YOUR_ROUTER_USERNAME"
 password = os.environ["MIKROTIK_PASSWORD"]
-backup_name = "choose a backup name"
+backup_name = "YOUR_BACKUP_NAME"
 
 backup_command = f"/system backup save name={backup_name}"
 
@@ -17,7 +17,7 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 try:
-    print("Connection to router...")
+    print("Connecting to router...")
 
     ssh.connect(
         router_ip,
@@ -26,17 +26,17 @@ try:
         timeout=15
     )
 
-    print("Creating Backup to router...")
+    print("Creating backup on router...")
 
     stdin, stdout, stderr = ssh.exec_command(backup_command)
     error = stderr.read().decode().strip()
 
     if error:
-        raise RuntimeError(f"Error RouterOS: {error}")
+        raise RuntimeError(f"RouterOS error: {error}")
 
     time.sleep(5)
 
-    print("Open SFTP to download backup...")
+    print("Opening SFTP connection to download backup...")
 
     sftp = ssh.open_sftp()
 
