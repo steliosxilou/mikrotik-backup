@@ -2,10 +2,10 @@ import os
 import time
 import paramiko
 
-router_ip = "192.168.10.1"
-username = "admin"
+router_ip = "your router IP"
+username = "username of the user on the router"
 password = os.environ["MIKROTIK_PASSWORD"]
-backup_name = "Weekly_10_1_backup"
+backup_name = "choose a backup name"
 
 backup_command = f"/system backup save name={backup_name}"
 
@@ -17,7 +17,7 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 try:
-    print("Σύνδεση στο router...")
+    print("Connection to router...")
 
     ssh.connect(
         router_ip,
@@ -26,17 +26,17 @@ try:
         timeout=15
     )
 
-    print("Δημιουργία backup στο router...")
+    print("Creating Backup to router...")
 
     stdin, stdout, stderr = ssh.exec_command(backup_command)
     error = stderr.read().decode().strip()
 
     if error:
-        raise RuntimeError(f"Σφάλμα RouterOS: {error}")
+        raise RuntimeError(f"Error RouterOS: {error}")
 
     time.sleep(5)
 
-    print("Άνοιγμα SFTP για λήψη του backup...")
+    print("Open SFTP to download backup...")
 
     sftp = ssh.open_sftp()
 
@@ -45,15 +45,15 @@ try:
 
         if file_info.st_size > 0:
             sftp.get(remote_filepath, local_filepath)
-            print(f"Το backup αποθηκεύτηκε στο: {local_filepath}")
+            print(f"Backup saved to: {local_filepath}")
         else:
-            print("Το αρχείο backup είναι άδειο. Η λήψη ακυρώθηκε.")
+            print("Backup file is empty. Download cancelled.")
 
     finally:
         sftp.close()
 
 except Exception as e:
-    print(f"Αποτυχία: {e}")
+    print(f"Failed: {e}")
 
 finally:
     ssh.close()
